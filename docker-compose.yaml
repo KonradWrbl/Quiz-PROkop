@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+  php:
+    container_name: quiz_php
+    build:
+      context: .
+      dockerfile: .docker/php.dockerfile
+    environment:
+      - DATABASE_URL=mysql://root:xVB3uVQa@mysql:3306/quiz?serverVersion=5.7
+    volumes:
+      - ./:/var/www/quiz
+    networks:
+      - quiz
+
+  nginx:
+    container_name: quiz_nginx
+    build:
+      context: .
+      dockerfile: .docker/nginx.dockerfile
+    volumes:
+      - ./:/var/www/quiz
+    ports:
+      - 8088:80
+    networks:
+      - quiz
+
+  mysql:
+    container_name: quiz_mysql
+    image: mysql:5.7
+    build:
+      context: .
+      dockerfile: .docker/mysql.dockerfile
+    environment:
+      - MYSQL_ROOT_PASSWORD=xVB3uVQa
+      - MYSQL_DATABASE=quiz
+      - MYSQL_USER=quiz
+      - MYSQL_PASSWORD=Y378ZeNA
+    volumes:
+        - "./data/db/mysql:/var/lib/mysql"
+        - "./etc/mysql:/etc/mysql/conf.d"
+    ports:
+      - 3666:3306
+    networks:
+      - quiz
+
+  myadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: quiz_phpmyadmin
+    ports:
+        - 1080:80
+    restart: always
+    links:
+        - mysql:db
+    environment:
+        UPLOAD_LIMIT: 300M
+    depends_on:
+        - mysql
+    networks:
+      - quiz
+networks:
+  quiz:
